@@ -13,6 +13,17 @@ const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 
+// Ensure DB is connected for serverless invocations on Vercel
+app.use(async (req, res, next) => {
+  if (process.env.NODE_ENV === 'production') {
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      await connectDB();
+    }
+  }
+  next();
+});
+
 app.use('/api/auth',       require('./routes/auth.routes'));
 app.use('/api/users',      require('./routes/user.routes'));
 app.use('/api/products',   require('./routes/product.routes'));
@@ -72,11 +83,7 @@ if (process.env.NODE_ENV !== 'production') {
   startServer();
 }
 
-// Ensure DB is connected for serverless invocations on Vercel
-app.use(async (req, res, next) => {
-  await connectDB();
-  next();
-});
+
 
 // Export the app for Vercel Serverless Functions
 module.exports = app;

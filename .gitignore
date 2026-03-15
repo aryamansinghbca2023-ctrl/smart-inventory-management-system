@@ -139,3 +139,5 @@ client/test-results/
 *.njsproj
 *.sln
 *.sw?
+
+.vercel
